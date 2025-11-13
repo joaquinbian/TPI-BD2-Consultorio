@@ -6,7 +6,6 @@ La base de datos almacena toda la información necesaria para el registro de pac
  Está orientado al uso del personal administrativo, aunque también puede ser extendido para uso directo de los pacientes a través de una interfaz web.
 El sistema evita superposición de horarios, mantiene un historial de turnos y cobros, y permite aplicar descuentos automáticos según edad, cobertura o promociones especiales.
  De esta forma, se busca optimizar los procesos de atención y garantizar la trazabilidad de cada turno y paciente dentro del consultorio.
-<img width="468" height="338" alt="image" src="https://github.com/user-attachments/assets/64d4f56e-6366-46c8-97c9-9550d20fd4da" />
 
 ## Funcionalidades principales
 - Gestión de pacientes:
@@ -26,4 +25,3 @@ Cálculo de montos y coberturas:
  El sistema calcula automáticamente el costo final del turno combinando el valor base del profesional, el porcentaje cubierto por la obra social y los descuentos aplicables según la edad o reglas especiales.
 - Gestión de Facturas:
 El sistema tendría guardado un historial de facturas con sus montos correspondientes para gestionar la contabilidad de los turnos 
-<img width="468" height="618" alt="image" src="https://github.com/user-attachments/assets/e65d4eab-f732-4edb-b746-853855b3446c" />
