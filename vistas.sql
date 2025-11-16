@@ -1,4 +1,8 @@
+use consultorio_db_v2
+GO
+
 /*VISTA HORARIOS CON PROFESIONALES*/
+
 GO
 CREATE VIEW vw_HorariosProfesionales
 AS
@@ -232,3 +236,33 @@ LEFT JOIN Profesional_ObraSocial PO
 LEFT JOIN ObraSocial OS
     ON PO.id_obra_social = OS.id_obra_social;
 GO
+
+CREATE OR ALTER VIEW v_resumen_obras_sociales AS
+SELECT 
+    OS.id_obra_social,
+    OS.nombre AS obra_social,
+    OS.porcentaje_cobertura,
+    
+    -- Estadísticas de turnos
+    COUNT(T.id_turno) AS total_turnos,
+    COUNT(CASE WHEN T.estado = 'Finalizado' THEN 1 END) AS turnos_finalizados,
+    COUNT(CASE WHEN T.estado = 'Confirmado' THEN 1 END) AS turnos_confirmados,
+    COUNT(CASE WHEN T.estado = 'Pendiente' THEN 1 END) AS turnos_pendientes,
+    COUNT(CASE WHEN T.estado = 'Cancelado' THEN 1 END) AS turnos_cancelados,
+    
+    -- Estadísticas financieras
+    ISNULL(SUM(F.monto_total), 0) AS total_recaudado,
+    ISNULL(AVG(F.monto_total), 0) AS promedio_por_turno,
+    ISNULL(MAX(F.monto_total), 0) AS factura_maxima,
+    ISNULL(MIN(F.monto_total), 0) AS factura_minima,
+    
+    -- Pacientes únicos
+    COUNT(DISTINCT T.id_paciente) AS pacientes_unicos
+
+FROM ObraSocial OS
+LEFT JOIN Turno T ON OS.id_obra_social = T.id_obra_social
+LEFT JOIN Factura F ON T.id_turno = F.id_turno
+GROUP BY OS.id_obra_social, OS.nombre, OS.porcentaje_cobertura;
+GO
+
+select * from v_resumen_obras_sociales

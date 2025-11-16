@@ -23,7 +23,7 @@ AS BEGIN
         -- el descuento aplicado, que viene de la obra social, si aplica x edad
         -- monto total, valor de la consulta del turno
         -- fecha de emision de la factura
-    --volvemos a validar y filtrar que se haga solo sobre los finalizados y si no hay una factura de turno yas
+    --volvemos a validar y filtrar que se haga solo sobre los finalizados y si no hay una factura de turno ya
      INSERT INTO Factura (
         id_turno,
         monto_base,
@@ -55,6 +55,8 @@ AS BEGIN
       AND NOT EXISTS (
           SELECT 1 FROM Factura F WHERE F.id_turno = I.id_turno
       );
+    
+
     
 
 END
