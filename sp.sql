@@ -454,9 +454,6 @@ BEGIN
 
         -- Repropagamos el error con el mensaje original
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
-        DECLARE @ErrorNumber  INT = ERROR_NUMBER();
-        DECLARE @ErrorState   INT = ERROR_STATE();
-
         RAISERROR(@ErrorMessage, 16, 1);
         RETURN;
     END CATCH
