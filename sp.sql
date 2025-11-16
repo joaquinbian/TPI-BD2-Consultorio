@@ -336,3 +336,129 @@ BEGIN
 
 END
 GO
+
+
+/*
+    EXEC sp_InsertHorarioAtencionPartido
+    @id_profesional   = 1,
+    @id_consultorio   = 1,
+    @id_especialidad  = 1,
+    @dia_semana       = 'Lunes',
+    @hora_inicio      = '09:00',
+    @hora_fin         = '12:00',
+    @cantidad_partes  = 3;
+*/
+
+CREATE OR ALTER PROCEDURE sp_InsertHorarioAtencionPartido
+(
+    @id_profesional   INT,
+    @id_consultorio   INT,
+    @id_especialidad  INT,
+    @dia_semana       NVARCHAR(20),
+    @hora_inicio      TIME(0),
+    @hora_fin         TIME(0),
+    @cantidad_partes  INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Validaciones
+        IF @cantidad_partes <= 0
+            THROW 50001, 'La cantidad de partes debe ser mayor a 0', 1;
+
+        -- Horas en bloques de 30 minutos
+        IF DATEPART(SECOND, @hora_inicio) <> 0
+           OR DATEPART(SECOND, @hora_fin) <> 0
+           OR DATEPART(MINUTE, @hora_inicio) NOT IN (0, 30)
+           OR DATEPART(MINUTE, @hora_fin) NOT IN (0, 30)
+        BEGIN
+            THROW 50002, 'Los horarios deben estar en bloques de 30 minutos (Ejemplo: HH:00 o HH:30)', 1;
+        END
+
+        -- Inicio < Fin
+        DECLARE @duracion_min INT = DATEDIFF(MINUTE, @hora_inicio, @hora_fin);
+
+        IF @duracion_min <= 0
+            THROW 50003, 'La hora de fin debe ser mayor a la de inicio.', 1;
+
+        -- Duracion multiplo de 30
+        IF @duracion_min % 30 <> 0
+            THROW 50004, 'La diferencia entre inicio y fin debe ser multiplo de 30 minutos', 1;
+
+        -- Duracion divisible en partes iguales
+        IF @duracion_min % @cantidad_partes <> 0
+            THROW 50005, 'El rango horario no se puede dividir en partes iguales con esa cantidad de partes', 1;
+
+        DECLARE @duracion_parte INT = @duracion_min / @cantidad_partes;
+
+        -- Cada parte minimo 30 minutos y multiplo de 30
+        IF @duracion_parte < 30 OR @duracion_parte % 30 <> 0
+            THROW 50006, 'Cada parte debe ser de al menos 30 minutos y multiplo de 30.', 1;
+
+        -- Iniciamos la transaccion
+        BEGIN TRAN;
+
+        DECLARE
+            @i INT = 0,
+            @ini_parte TIME(0),
+            @fin_parte TIME(0);
+
+        WHILE @i < @cantidad_partes
+        BEGIN
+            SET @ini_parte = DATEADD(MINUTE, @i * @duracion_parte, @hora_inicio);
+            SET @fin_parte = DATEADD(MINUTE, (@i + 1) * @duracion_parte, @hora_inicio);
+
+            -- 1. Validamos que el profesional no tenga ya ese horario
+            IF EXISTS (
+                SELECT 1
+                FROM HorarioAtencion ha
+                WHERE ha.id_profesional   = @id_profesional
+                  AND ha.dia_semana      = @dia_semana
+                  AND ha.hora_inicio      = @ini_parte
+                  AND ha.hora_fin        = @fin_parte
+            )
+            BEGIN
+                THROW 50007, 'Ya existe un horario identico para este profesional.', 1;
+            END
+
+            -- 2. Validamos que el consultorio este libre para ese horario
+            IF EXISTS (
+                SELECT 1
+                FROM HorarioAtencion ha
+                WHERE ha.dia_semana      = @dia_semana
+                  AND ha.hora_inicio      = @ini_parte
+                  AND ha.hora_fin        = @fin_parte
+                  AND ha.id_consultorio <> @id_consultorio
+                  AND ha.id_profesional  <> @id_profesional
+            )
+            BEGIN
+                THROW 50008, 'El consultrorio esta ocupado en ese horario.', 1;
+            END
+
+            -- 3) Insertamos
+            INSERT INTO HorarioAtencion
+                (id_profesional, id_consultorio, id_especialidad, dia_semana, hora_inicio, hora_fin)
+            VALUES
+                (@id_profesional, @id_consultorio, @id_especialidad, @dia_semana, @ini_parte, @fin_parte);
+
+            SET @i += 1;
+        END
+
+        COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRAN;
+
+        -- Repropagamos el error con el mensaje original
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber  INT = ERROR_NUMBER();
+        DECLARE @ErrorState   INT = ERROR_STATE();
+
+        RAISERROR(@ErrorMessage, 16, 1);
+        RETURN;
+    END CATCH
+END;
+GO
