@@ -20,8 +20,8 @@ AS BEGIN
         -- id del turno
         -- valor de la consulta (que viene del registro del profesional segun su especialidad)
         -- el porcentaje de cobertura que se aplico (que viene de la obra social)
-        -- el descuento aplicado, que viene de la obra social, filtrando por la fecha
-        -- monto total, valor de la consulta - el porcentaje de cobertura - descuento (si aplica)
+        -- el descuento aplicado, que viene de la obra social, si aplica x edad
+        -- monto total, valor de la consulta del turno
         -- fecha de emision de la factura
     --volvemos a validar y filtrar que se haga solo sobre los finalizados y si no hay una factura de turno yas
      INSERT INTO Factura (
@@ -37,9 +37,7 @@ AS BEGIN
         PE.valor_consulta AS monto_base,
         ISNULL(OS.porcentaje_cobertura, 0) AS cobertura_aplicada,
         ISNULL(DES.porcentaje_descuento, 0) AS descuento_aplicado,
-        PE.valor_consulta 
-        * (1 - ISNULL(OS.porcentaje_cobertura, 0) / 100.0)
-        * (1 - ISNULL(DES.porcentaje_descuento, 0) / 100.0) AS monto_total,
+        I.monto_total,
         CAST(GETDATE() AS DATE) AS fecha_emision
     
     FROM inserted I
