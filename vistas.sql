@@ -190,3 +190,45 @@ SELECT
 FROM vw_TurnosPorPaciente
 ORDER BY fecha_turno;
 */
+
+
+--HORARIOS PERO POR OBRA SOCIAL, SE REPITEN LOS MISMOS HORARIOS SEGUN LOS CONVENIOS ACTIVOS QUE TENGA EL PROFESIONAL DEL TURNO CON OBRAS SOCIALES (PENSADO PARA BUSCAR COBERTURAS)
+
+GO
+CREATE OR ALTER VIEW vw_HorariosPorObraSocial
+AS
+SELECT 
+    HA.id_horario,
+    P.id_profesional,
+    P.nombre AS nombre_profesional,
+    P.apellido AS apellido_profesional,
+
+    E.id_especialidad,
+    E.nombre AS especialidad,
+
+    C.id_consultorio,
+    C.nombre AS consultorio,
+    C.direccion AS consultorio_direccion,
+    C.piso AS consultorio_piso,
+    C.numero_sala,
+
+    OS.id_obra_social,
+    OS.nombre AS obra_social,
+    OS.porcentaje_cobertura,
+
+    HA.dia_semana,
+    HA.hora_inicio,
+    HA.hora_fin
+FROM HorarioAtencion HA
+INNER JOIN Profesional P
+    ON HA.id_profesional = P.id_profesional
+INNER JOIN Especialidad E
+    ON HA.id_especialidad = E.id_especialidad
+INNER JOIN Consultorio C
+    ON HA.id_consultorio = C.id_consultorio
+LEFT JOIN Profesional_ObraSocial PO
+    ON P.id_profesional = PO.id_profesional
+    AND PO.convenio_activo = 1
+LEFT JOIN ObraSocial OS
+    ON PO.id_obra_social = OS.id_obra_social;
+GO
