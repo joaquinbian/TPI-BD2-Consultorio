@@ -9,7 +9,7 @@ AS BEGIN
     -- si no se cambio de estado a finalizado, no hacemos nada
     IF NOT EXISTS(
         SELECT 1 FROM deleted D INNER JOIN inserted I on D.id_turno = I.id_turno 
-        WHERE D.estado != 'Finalzado' AND i.estado = 'Finalizado' 
+        WHERE D.estado != 'Finalizado' AND i.estado = 'Finalizado' 
     ) 
     BEGIN
         RETURN
