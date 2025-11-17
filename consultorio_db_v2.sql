@@ -1,8 +1,8 @@
 	
-    IF DB_ID('consultorio_db_v7') IS NULL
-        CREATE DATABASE consultorio_db_v7;
+    IF DB_ID('consultorio_db_v2') IS NULL
+        CREATE DATABASE consultorio_db_v2;
     GO
-    USE consultorio_db_v7;
+    USE consultorio_db_v2;
     GO
 
 
