@@ -1,148 +1,165 @@
-USE consultorio_db_v2;
-GO
-
-
-
-
 INSERT INTO ObraSocial (nombre, porcentaje_cobertura, telefono, direccion) VALUES
-('OSDE', 70.00, '0800-555-6733', 'Av. Leandro N. Alem 1067, CABA'),
-('Swiss Medical', 65.00, '0810-333-8477', 'Av. Callao 1995, CABA'),
-('Galeno', 60.00, '0800-122-4253', 'Av. Córdoba 1351, CABA'),
-('IOMA', 50.00, '0221-429-6800', 'Calle 46 N° 602, La Plata'),
-('OSECAC', 55.00, '0800-888-6732', 'Av. Independencia 2880, CABA'),
-('Medifé', 65.00, '0810-999-6334', 'Av. Santa Fe 1611, CABA'),
-('Particular', 0.00, NULL, NULL);
-GO
-
+('OSDE', 70, '0800-555-6733', 'Av. Alem 1067'),
+('Swiss Medical', 65, '0810-333-8477', 'Av. Callao 1995'),
+('Galeno', 60, '0800-122-4253', 'Av. Córdoba 1351'),
+('IOMA', 50, '0221-429-6800', 'Calle 46 602, La Plata'),
+('OSECAC', 55, '0800-888-6732', 'Av. Independencia 2880'),
+('Particular', 0, NULL, NULL),
+('Emergencias Prepaga', 40, NULL, NULL); -- Obra social económica para probar casos de baja cobertura
 
 INSERT INTO Especialidad (nombre, descripcion) VALUES
-('Clínica Médica', 'Atención general de adultos'),
-('Pediatría', 'Atención de niños y adolescentes'),
-('Cardiología', 'Especialidad en enfermedades del corazón'),
-('Traumatología', 'Atención de lesiones músculo-esqueléticas'),
-('Dermatología', 'Especialidad en enfermedades de la piel'),
-('Ginecología', 'Salud de la mujer'),
-('Odontología', 'Salud bucal y dental'),
-('Oftalmología', 'Especialidad en enfermedades de la vista');
-GO
-
+('Clínica Médica', 'Generalista'),
+('Pediatría', 'Niños'),
+('Cardiología', 'Corazón'),
+('Dermatología', 'Piel'),
+('Traumatología', 'Huesos y músculos'),
+('Ginecología', 'Salud femenina');
 
 INSERT INTO Profesional (nombre, apellido, dni, matricula, telefono, email, direccion, activo) VALUES
-('María', 'González', '28456789', 'MN-45678', '11-4567-8901', 'mgonzalez@consultorio.com', 'Av. Corrientes 1234, CABA', 1),
-('Carlos', 'Rodríguez', '30123456', 'MN-38765', '11-4567-8902', 'crodriguez@consultorio.com', 'Av. Rivadavia 5678, CABA', 1),
-('Ana', 'Martínez', '32789012', 'MN-52341', '11-4567-8903', 'amartinez@consultorio.com', 'Av. Belgrano 910, CABA', 1),
-('Roberto', 'Fernández', '27654321', 'MN-41289', '11-4567-8904', 'rfernandez@consultorio.com', 'Av. Santa Fe 2345, CABA', 1),
-('Laura', 'Sánchez', '31234567', 'MN-49876', '11-4567-8905', 'lsanchez@consultorio.com', 'Av. Callao 678, CABA', 1),
-('Diego', 'López', '29876543', 'MN-47123', '11-4567-8906', 'dlopez@consultorio.com', 'Av. Córdoba 3456, CABA', 1);
-GO
+('María', 'González', '28456789', 'MN-1001', '11-4300-0001', 'maria@med.com', 'Corrientes 123', 1),
+('Carlos', 'Ruiz',      '29567890', 'MN-1002', '11-4300-0002', 'carlos@med.com', 'Rivadavia 999', 1),
+('Ana', 'Martínez',     '30678901', 'MN-1003', '11-4300-0003', 'ana@med.com', 'Belgrano 450', 1),
+('Roberto', 'Funes',    '31789012', 'MN-1004', '11-4300-0004', 'roberto@med.com', 'Callao 1200', 1),
+('Laura', 'Sosa',       '32890123', 'MN-1005', '11-4300-0005', 'laura@med.com', 'Córdoba 2100', 1),
+('Diego', 'Alonso',     '33901234', 'MN-1006', '11-4300-0006', 'diego@med.com', 'Cabildo 2000', 1),
+('Martina', 'Silva',    '35012345', 'MN-1007', '11-4300-0007', 'martina@med.com', 'Libertador 5000', 1);
 
 
 INSERT INTO Consultorio (nombre, direccion, piso, numero_sala) VALUES
-('Consultorio Central', 'Av. Córdoba 1500, CABA', '3', '301'),
-('Consultorio Central', 'Av. Córdoba 1500, CABA', '3', '302'),
-('Consultorio Central', 'Av. Córdoba 1500, CABA', '4', '401'),
-('Consultorio Belgrano', 'Av. Cabildo 2100, CABA', '2', '201'),
-('Consultorio Belgrano', 'Av. Cabildo 2100, CABA', '2', '202');
-GO
-
+('Central', 'Av. Córdoba 1500', '3', '301'),
+('Central', 'Av. Córdoba 1500', '3', '302'),
+('Central', 'Av. Córdoba 1500', '4', '401'),
+('Belgrano', 'Av. Cabildo 2100', '2', '201'),
+('Belgrano', 'Av. Cabildo 2100', '2', '202'),
+('Anexo Norte', 'Av. General Paz 150', '1', '102');
 
 INSERT INTO Profesional_Especialidad (id_profesional, id_especialidad, valor_consulta) VALUES
-(1, 1, 15000.00), 
-(2, 2, 18000.00),
-(3, 3, 25000.00),
-(4, 4, 22000.00),
-(5, 5, 20000.00),
-(6, 6, 23000.00),
-(1, 5, 20000.00),
-(3, 1, 15000.00);
-GO
-
-INSERT INTO Profesional_ObraSocial (id_profesional, id_obra_social, convenio_activo, fecha_inicio) VALUES
-(1, 1, 1, '2024-01-01'),
-(1, 2, 1, '2024-01-01'),
-(1, 3, 1, '2024-01-01'),
-(2, 1, 1, '2024-01-01'),
-(2, 4, 1, '2024-01-01'),
-(3, 1, 1, '2024-01-01'),
-(3, 2, 1, '2024-01-01'),
-(4, 1, 1, '2024-01-01'),
-(4, 5, 1, '2024-01-01'),
-(5, 2, 1, '2024-01-01'),
-(5, 6, 1, '2024-01-01'),
-(6, 1, 1, '2024-01-01'),
-(6, 3, 1, '2024-01-01');
-GO
-
-
-INSERT INTO HorarioAtencion (id_profesional, id_consultorio, id_especialidad, dia_semana, hora_inicio, hora_fin) VALUES
-(1, 1, 1, 'Lunes', '09:00', '13:00'),
-(1, 1, 1, 'Miércoles', '09:00', '13:00'),
-(1, 1, 1, 'Viernes', '14:00', '18:00'),
-(2, 2, 2, 'Lunes', '14:00', '18:00'),
-(2, 2, 2, 'Martes', '09:00', '13:00'),
-(2, 2, 2, 'Jueves', '14:00', '18:00'),
-(3, 3, 3, 'Martes', '14:00', '18:00'),
-(3, 3, 3, 'Jueves', '09:00', '13:00'),
-(3, 3, 3, 'Viernes', '09:00', '13:00'),
-(4, 4, 4, 'Lunes', '08:00', '12:00'),
-(4, 4, 4, 'Miércoles', '14:00', '18:00'),
-(4, 4, 4, 'Viernes', '08:00', '12:00'),
-(5, 5, 5, 'Martes', '10:00', '14:00'),
-(5, 5, 5, 'Jueves', '15:00', '19:00'),
-(6, 1, 6, 'Miércoles', '15:00', '19:00'),
-(6, 3, 6, 'Viernes', '10:00', '14:00');
-GO
+(1,1,15000),(1,4,18000),
+(2,2,14000),
+(3,3,25000),(3,1,15000),
+(4,5,22000),
+(5,4,20000),
+(6,6,23000),
+(7,1,15000),(7,2,17000);
 
 
 INSERT INTO Paciente (nombre, apellido, dni, fecha_nacimiento, telefono, email, direccion, id_obra_social, nro_afiliado, activo) VALUES
-('Juan', 'Pérez', '35123456', '1990-03-15', '11-5555-1234', 'jperez@email.com', 'Av. Corrientes 500, CABA', 1, '1234567890', 1),
-('Sofía', 'Ramírez', '40234567', '2005-07-22', '11-5555-2345', 'sramirez@email.com', 'Av. Santa Fe 1200, CABA', 2, '2345678901', 1),
-('Miguel', 'Torres', '28345678', '1985-11-10', '11-5555-3456', 'mtorres@email.com', 'Av. Rivadavia 2300, CABA', 1, '3456789012', 1),
-('Carolina', 'Díaz', '42456789', '2010-02-18', '11-5555-4567', 'cdiaz@email.com', 'Av. Callao 800, CABA', 4, '4567890123', 1),
-('Roberto', 'Gómez', '25567890', '1978-09-05', '11-5555-5678', 'rgomez@email.com', 'Av. Belgrano 1500, CABA', 3, '5678901234', 1),
-('Lucía', 'Morales', '38678901', '1995-12-30', '11-5555-6789', 'lmorales@email.com', 'Av. Córdoba 2100, CABA', 5, '6789012345', 1),
-('Fernando', 'Silva', '31789012', '1988-04-25', '11-5555-7890', 'fsilva@email.com', 'Av. Cabildo 1800, CABA', 2, '7890123456', 1),
-('Valentina', 'Castro', '43890123', '2012-08-14', '11-5555-8901', 'vcastro@email.com', 'Av. Pueyrredón 900, CABA', 1, '8901234567', 1),
-('Andrés', 'Ruiz', '29901234', '1982-06-20', '11-5555-9012', 'aruiz@email.com', 'Av. Independencia 1100, CABA', 6, '9012345678', 1),
-('Martina', 'Vargas', '39012345', '1998-01-07', '11-5555-0123', 'mvargas@email.com', 'Av. Corrientes 3000, CABA', 7, NULL, 1);
-GO
+('Juan', 'Pérez', '35123456','1990-03-15','11-5555-1234','jp@x.com','Corrientes 500',1,'1111',1),
+('Lucía','Gómez','46234567','2015-05-10','11-5555-2345','lg@x.com','Callao 300',2,'2222',1),
+('Roberto','Silva','28123456','1950-08-22','11-5555-3456','rs@x.com','Belgrano 1000',1,'3333',1),
+('Elena','Martín','29345678','2001-11-01','11-5555-4567','em@x.com','Rivadavia 800',4,'4444',1),
+('Martín','López','31789012','1988-02-19','11-5555-5678','ml@x.com','Córdoba 2500',3,'5555',1),
+('Valentina','Ruiz','43890123','2012-08-14','11-5555-6789','vr@x.com','Independencia 800',6,NULL,1),
+('Carlos','Duarte','29001122','1980-09-23','11-5555-7788','cd@x.com','Cabildo 2000',7,'9999',0); -- inactivo
+
+DECLARE 
+    @profesional INT,
+    @dia INT,
+    @inicio TIME,
+    @fin TIME,
+    @consultorio INT,
+    @diaText VARCHAR(20);
+
+-- Config
+DECLARE @DuracionMinutos INT = 30;
+DECLARE @HoraManianaInicio TIME = '08:00';
+DECLARE @HoraManianaFin   TIME = '12:00';
+DECLARE @HoraTardeInicio  TIME = '14:00';
+DECLARE @HoraTardeFin     TIME = '18:00';
+DECLARE @CantConsultorios INT = 3;
+
+-- Tabla con profesionales activos
+DECLARE @Profesionales TABLE(id_prof INT);
+INSERT INTO @Profesionales SELECT id_profesional FROM Profesional WHERE activo = 1;
+
+-- Cursor
+DECLARE cur CURSOR FOR SELECT id_prof FROM @Profesionales;
+OPEN cur;
+FETCH NEXT FROM cur INTO @profesional;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @dia = 1;  -- Lunes
+
+    WHILE @dia <= 5
+    BEGIN
+        -- Convertimos número a texto
+        SET @diaText =
+            CASE @dia
+                WHEN 1 THEN 'Lunes'
+                WHEN 2 THEN 'Martes'
+                WHEN 3 THEN 'Miércoles'
+                WHEN 4 THEN 'Jueves'
+                WHEN 5 THEN 'Viernes'
+            END;
+
+        SET @consultorio = 1;
+
+        WHILE @consultorio <= @CantConsultorios
+        BEGIN
+            ------------------------------
+            -- BLOQUE MAÑANA
+            ------------------------------
+            SET @inicio = @HoraManianaInicio;
+
+            WHILE DATEADD(MINUTE, @DuracionMinutos, @inicio) <= @HoraManianaFin
+            BEGIN
+                SET @fin = DATEADD(MINUTE, @DuracionMinutos, @inicio);
+
+                INSERT INTO HorarioAtencion (id_profesional, id_consultorio, id_especialidad, dia_semana, hora_inicio, hora_fin)
+                SELECT @profesional, @consultorio, PE.id_especialidad, @diaText, @inicio, @fin
+                FROM Profesional_Especialidad PE
+                WHERE PE.id_profesional = @profesional;
+
+                SET @inicio = @fin;
+            END
+
+            ------------------------------
+            -- BLOQUE TARDE
+            ------------------------------
+            SET @inicio = @HoraTardeInicio;
+
+            WHILE DATEADD(MINUTE, @DuracionMinutos, @inicio) <= @HoraTardeFin
+            BEGIN
+                SET @fin = DATEADD(MINUTE, @DuracionMinutos, @inicio);
+
+                INSERT INTO HorarioAtencion (id_profesional, id_consultorio, id_especialidad, dia_semana, hora_inicio, hora_fin)
+                SELECT @profesional, @consultorio, PE.id_especialidad, @diaText, @inicio, @fin
+                FROM Profesional_Especialidad PE
+                WHERE PE.id_profesional = @profesional;
+
+                SET @inicio = @fin;
+            END
+
+            SET @consultorio += 1;
+        END
+
+        SET @dia += 1;
+    END
+
+    FETCH NEXT FROM cur INTO @profesional;
+END
+
+CLOSE cur;
+DEALLOCATE cur;
 
 
-INSERT INTO Descuento (id_obra_social, edad_min, edad_max, porcentaje_descuento, descripcion) VALUES
-(1, 0, 12, 15.00, 'Descuento pediátrico OSDE'),
-(1, 65, 120, 20.00, 'Descuento tercera edad OSDE'),
-(2, 0, 12, 10.00, 'Descuento pediátrico Swiss Medical'),
-(3, 0, 12, 12.00, 'Descuento pediátrico Galeno'),
-(4, 0, 18, 20.00, 'Descuento menor IOMA'),
-(4, 65, 120, 25.00, 'Descuento jubilados IOMA'),
-(5, 65, 120, 15.00, 'Descuento tercera edad OSECAC');
-GO
 
+INSERT INTO Turno (id_paciente,id_horario,id_obra_social,fecha_turno,hora_turno,estado,monto_total) VALUES
 
-INSERT INTO Turno (id_paciente, id_horario, id_obra_social, fecha_turno, hora_turno, estado, monto_total) VALUES
-(1, 1, 1, '2025-01-15', '09:30', 'Finalizado', 4500.00),
-(2, 4, 2, '2025-01-15', '14:30', 'Finalizado', 6300.00),
-(3, 7, 1, '2025-01-16', '15:00', 'Finalizado', 7500.00),
-(4, 5, 4, '2025-01-17', '09:30', 'Finalizado', 7200.00),
-(5, 10, 3, '2025-01-19', '08:30', 'Finalizado', 8800.00),
+-- Finalizados (facturables)
+(1, 1, 1, '2025-01-10','08:30','Finalizado',4500),
+(2, 5, 2, '2025-01-11','09:00','Finalizado',6300),
 
-(6, 12, 5, '2025-11-18', '10:30', 'Confirmado', 11000.00),
-(7, 2, 2, '2025-11-20', '10:00', 'Confirmado', 6300.00),
-(8, 4, 1, '2025-11-22', '15:00', 'Confirmado', 4590.00),
-(9, 8, 6, '2025-11-25', '10:30', 'Confirmado', 8050.00),
-(10, 15, 7, '2025-11-27', '16:00', 'Confirmado', 23000.00),
+-- Confirmados (para probar facturación futura)
+(3, 10, 1, '2025-02-12','10:00','Confirmado',7500),
+(4, 11, 4, '2025-02-12','10:30','Confirmado',6200),
 
-(1, 3, 1, '2025-11-29', '15:00', 'Pendiente', 4500.00),
-(3, 7, 1, '2025-12-02', '16:00', 'Pendiente', 7500.00),
+-- Pendientes
+(5, 20, 3, '2025-03-10','11:00','Pendiente',8800),
 
-(2, 6, 2, '2025-11-21', '09:30', 'Cancelado', 6300.00);
-GO
+-- Reprogramación
+(6, 25, 1, '2025-03-11','14:00','Pendiente',4590),
 
-
-INSERT INTO Factura (id_turno, monto_base, cobertura_aplicada, descuento_aplicado, monto_total, fecha_emision) VALUES
-(1, 15000.00, 70.00, 0.00, 4500.00, '2025-01-15'),
-(2, 18000.00, 65.00, 0.00, 6300.00, '2025-01-15'),
-(3, 25000.00, 70.00, 0.00, 7500.00, '2025-01-16'),
-(4, 18000.00, 50.00, 10.00, 7200.00, '2025-01-17'),
-(5, 22000.00, 60.00, 0.00, 8800.00, '2025-01-19');
-GO
+-- Cancelado previamente
+(7, 30, 7, '2025-03-12','15:00','Cancelado',23000);
