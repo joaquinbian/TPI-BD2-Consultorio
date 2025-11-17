@@ -1070,93 +1070,97 @@ GO
 
     */
     --BUSQUEDA DISPONIBILIDAD DE TURNO DINAMICO
-    GO
-    CREATE OR ALTER PROCEDURE sp_BuscarDisponibilidadTurno
-    (
-        @obraSocialId INT = NULL,              -- NULL = particular
-        @tipoFiltro NVARCHAR(20) = NULL,       -- 'especialidad' | 'profesional' | NULL
-        @valorFiltro INT = NULL,               -- id segun filtro
-        @diaSemana NVARCHAR(15) = NULL,        -- lunes, martes...
-        @horaDesde TIME = NULL,                -- hora exacta o desde
-        @horaHasta TIME = NULL                 -- hasta (opcional)
-    )
-    AS
+  GO
+CREATE OR ALTER PROCEDURE sp_BuscarDisponibilidadTurno
+(
+    @obraSocialId INT = NULL,              
+    @tipoFiltro NVARCHAR(20) = NULL,      
+    @valorFiltro INT = NULL,               
+    @diaSemana NVARCHAR(15) = NULL,        
+    @horaDesde TIME = NULL,                
+    @horaHasta TIME = NULL                 
+)
+AS
+BEGIN
+
+    SET @tipoFiltro = LOWER(@tipoFiltro);
+
+    -- validacion de tipoFiltro
+    IF @tipoFiltro IS NOT NULL AND @tipoFiltro NOT IN ('especialidad', 'profesional')
     BEGIN
+        RAISERROR('tipoFiltro invalido. Usar especialidad o profesional.', 16, 1);
+        RETURN;
+    END
 
-        -- normalizacion
-        SET @tipoFiltro = LOWER(@tipoFiltro);
-
-        -- validacion de tipoFiltro
-        IF @tipoFiltro IS NOT NULL AND @tipoFiltro NOT IN ('especialidad', 'profesional')
+    -- validacion de rango horario
+    IF @horaDesde IS NOT NULL AND @horaHasta IS NOT NULL
+    BEGIN
+        IF @horaHasta < @horaDesde
         BEGIN
-            RAISERROR('tipoFiltro invalido. Usar especialidad o profesional.', 16, 1);
+            RAISERROR('horaHasta no puede ser menor que horaDesde.', 16, 1);
             RETURN;
         END
-
-        -- validacion de rango horario
-        IF @horaDesde IS NOT NULL AND @horaHasta IS NOT NULL
-        BEGIN
-            IF @horaHasta < @horaDesde
-            BEGIN
-                RAISERROR('horaHasta no puede ser menor que horaDesde.', 16, 1);
-                RETURN;
-            END
-        END
-
-        -- consulta principal
-        SELECT
-            id_horario,
-            id_profesional,
-            nombre_profesional,
-            apellido_profesional,
-            id_especialidad,
-            especialidad,
-            id_consultorio,
-            consultorio,
-            consultorio_direccion,
-            consultorio_piso,
-            numero_sala,
-            id_obra_social,
-            obra_social,
-            porcentaje_cobertura,
-            dia_semana,
-            hora_inicio,
-            hora_fin
-        FROM vw_HorariosPorObraSocial
-        WHERE
-            -- filtro por obra social (solo si viene)
-            (@obraSocialId IS NULL OR id_obra_social = @obraSocialId)
-
-            -- filtro comun agrupado:
-            AND (
-                    @tipoFiltro IS NULL
-                    OR (@tipoFiltro = 'especialidad' AND id_especialidad = @valorFiltro)
-                    OR (@tipoFiltro = 'profesional' AND id_profesional = @valorFiltro)
-                )
-
-            -- filtro por dia de semana
-            AND (
-                    @diaSemana IS NULL
-                    OR LOWER(dia_semana) = LOWER(@diaSemana)
-                )
-
-            -- filtro por hora exacta o rango
-            AND (
-                    @horaDesde IS NULL
-                    OR (
-                            @horaHasta IS NULL
-                            AND hora_inicio = @horaDesde          -- hora exacta
-                    )
-                    OR (
-                            @horaHasta IS NOT NULL
-                            AND hora_inicio BETWEEN @horaDesde AND @horaHasta  -- rango
-                    )
-                )
-
-        ORDER BY dia_semana, hora_inicio, nombre_profesional;
-
     END
-    GO
+
+    -- consulta principal
+    SELECT
+        id_horario,
+        id_profesional,
+        nombre_profesional,
+        apellido_profesional,
+        id_especialidad,
+        especialidad,
+        id_consultorio,
+        consultorio,
+        consultorio_direccion,
+        consultorio_piso,
+        numero_sala,
+        id_obra_social,
+        obra_social,
+        porcentaje_cobertura,
+        dia_semana,
+        hora_inicio,
+        hora_fin
+    FROM vw_HorariosPorObraSocial H
+    WHERE
+        (@obraSocialId IS NULL OR id_obra_social = @obraSocialId)
+
+        AND (
+                @tipoFiltro IS NULL
+                OR (@tipoFiltro = 'especialidad' AND id_especialidad = @valorFiltro)
+                OR (@tipoFiltro = 'profesional' AND id_profesional = @valorFiltro)
+            )
+
+        AND (
+                @diaSemana IS NULL
+                OR LOWER(dia_semana) = LOWER(@diaSemana)
+            )
+
+        AND (
+                @horaDesde IS NULL
+                OR (
+                        @horaHasta IS NULL
+                        AND hora_inicio = @horaDesde
+                    )
+                OR (
+                        @horaHasta IS NOT NULL
+                        AND hora_inicio BETWEEN @horaDesde AND @horaHasta
+                    )
+            )
+
+        --  excluir horarios ya tomados
+        AND NOT EXISTS (
+            SELECT 1
+            FROM Turno T
+            WHERE T.id_horario = H.id_horario
+              AND T.estado IN ('Pendiente', 'Confirmado', 'Finalizado') --cancelado vuelve a estar ready
+        )
+
+    ORDER BY dia_semana, hora_inicio, nombre_profesional;
+
+END
+GO
+
 
 GO
 
