@@ -211,9 +211,9 @@
 		P.nombre AS nombre_paciente,
 		P.apellido AS apellido_paciente,
 		P.dni AS dni_paciente,
-		P.id_obra_social,
-		OS.nombre AS obra_social,
-		OS.porcentaje_cobertura,
+		T.id_obra_social,
+        OS.nombre AS obra_social,
+        OS.porcentaje_cobertura,
 
 		-- Horario
 		HA.id_horario,
@@ -249,7 +249,7 @@
 		INNER JOIN Especialidad E
 			ON PE.id_especialidad = E.id_especialidad
 		LEFT JOIN ObraSocial OS
-			ON P.id_obra_social = OS.id_obra_social
+            ON T.id_obra_social = OS.id_obra_social
 		INNER JOIN Consultorio C
 			ON HA.id_consultorio = C.id_consultorio;
 	GO
@@ -458,6 +458,9 @@ AS
 			SELECT @id_profesional_especialidad = id_profesional_especialidad
 			FROM Profesional_Especialidad
 			WHERE id_profesional = @id_profesional AND id_especialidad = @id_especialidad
+
+            IF @id_profesional_especialidad IS NULL
+                THROW 50020, 'El profesional no tiene esa especialidad asignada.', 1;
 
             ---------------------------------------------------------
             -- 3) Transaccion para insertar las partes
@@ -719,6 +722,18 @@ AS
             RAISERROR('La fecha del turno no puede ser anterior a hoy.', 16, 1);
             RETURN;
         END
+
+            --VALIDAR QUE EL HORARIO NO ESTE OCUPADO
+        IF EXISTS (
+                        SELECT 1
+                        FROM Turno
+                        WHERE id_horario = @id_horario
+                        AND estado IN ('Pendiente', 'Confirmado', 'Finalizado')
+                    )
+                    BEGIN
+                        RAISERROR('Ese horario ya esta ocupado.', 16, 1);
+                        RETURN;
+                    END
 
         -------------------------------------------------------------------
         -- 4) HACER UN INSERT PROVISORIO PARA CALCULAR EL MONTO
