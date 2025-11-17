@@ -6,8 +6,20 @@
     GO
 
 
+
+	CREATE TABLE ObraSocial (
+        id_obra_social INT IDENTITY(1,1) PRIMARY KEY,
+        nombre NVARCHAR(50) NOT NULL,
+        porcentaje_cobertura DECIMAL(5,2),
+        telefono NVARCHAR(20),
+        direccion NVARCHAR(100)
+    );
+    GO
+
     CREATE TABLE Paciente (
         id_paciente INT IDENTITY(1,1) PRIMARY KEY,
+        id_obra_social INT NULL,
+        nro_afiliado NVARCHAR(30) NULL,
         nombre NVARCHAR(50) NOT NULL,
         apellido NVARCHAR(50) NOT NULL,
         dni NVARCHAR(15) UNIQUE NOT NULL,
@@ -15,18 +27,8 @@
         telefono NVARCHAR(20),
         email NVARCHAR(100),
         direccion NVARCHAR(100),
-        id_obra_social INT NULL,
-        nro_afiliado NVARCHAR(30) NULL,
-        activo BIT DEFAULT 1
-    );
-    GO
-
-    CREATE TABLE ObraSocial (
-        id_obra_social INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(50) NOT NULL,
-        porcentaje_cobertura DECIMAL(5,2),
-        telefono NVARCHAR(20),
-        direccion NVARCHAR(100)
+        activo BIT DEFAULT 1,
+        FOREIGN KEY(id_obra_social) REFERENCES ObraSocial(id_obra_social)
     );
     GO
 
@@ -54,12 +56,12 @@
 
 
     CREATE TABLE Profesional_Especialidad (
-        id_profesional INT NOT NULL,
-        id_especialidad INT NOT NULL,
-        valor_consulta DECIMAL(10,2),
-        PRIMARY KEY (id_profesional, id_especialidad),
-        FOREIGN KEY (id_profesional) REFERENCES Profesional(id_profesional),
-        FOREIGN KEY (id_especialidad) REFERENCES Especialidad(id_especialidad)
+		id_profesional_especialidad INT IDENTITY(1,1) PRIMARY KEY,
+		id_profesional INT NOT NULL,
+		id_especialidad INT NOT NULL,
+		valor_consulta DECIMAL(10,2),
+		FOREIGN KEY (id_profesional) REFERENCES Profesional(id_profesional),
+		FOREIGN KEY (id_especialidad) REFERENCES Especialidad(id_especialidad)
     );
     GO
 
@@ -87,15 +89,13 @@
 
     CREATE TABLE HorarioAtencion (
         id_horario INT IDENTITY(1,1) PRIMARY KEY,
-        id_profesional INT NOT NULL,
+        id_profesional_especialidad INT NOT NULL,
         id_consultorio INT NOT NULL,
-        id_especialidad INT NOT NULL,
         dia_semana NVARCHAR(15),
         hora_inicio TIME,
         hora_fin TIME,
-        FOREIGN KEY (id_profesional) REFERENCES Profesional(id_profesional),
-        FOREIGN KEY (id_consultorio) REFERENCES Consultorio(id_consultorio),
-        FOREIGN KEY (id_especialidad) REFERENCES Especialidad(id_especialidad)
+        FOREIGN KEY (id_profesional_especialidad) REFERENCES Profesional_Especialidad(id_profesional_especialidad),
+        FOREIGN KEY (id_consultorio) REFERENCES Consultorio(id_consultorio)
     );
     GO
 
@@ -162,13 +162,16 @@
         HA.dia_semana,
         HA.hora_inicio,
         HA.hora_fin
-    FROM HorarioAtencion HA
-    INNER JOIN Profesional P
-        ON HA.id_profesional = P.id_profesional
-    INNER JOIN Consultorio C
-        ON HA.id_consultorio = C.id_consultorio
-    INNER JOIN Especialidad E
-        ON HA.id_especialidad = E.id_especialidad;
+	   FROM HorarioAtencion HA
+	INNER JOIN Profesional_Especialidad PE
+		ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+	INNER JOIN Profesional P
+		ON PE.id_profesional = P.id_profesional
+	INNER JOIN Especialidad E
+		ON PE.id_especialidad = E.id_especialidad
+	INNER JOIN Consultorio C
+		ON HA.id_consultorio = C.id_consultorio;
+
     GO
 
     /*VISTA PROFESIONAL POR ESPECIALIDAD*/
@@ -195,59 +198,62 @@
     /*VISTAS TURNO PACIENTES*/
     GO
     CREATE VIEW vw_TurnosPorPaciente
-    AS
-    SELECT
-        T.id_turno,
-        T.fecha_turno,
-        T.hora_turno,
-        T.estado,
-        T.monto_total,
+	AS
+	SELECT
+		T.id_turno,
+		T.fecha_turno,
+		T.hora_turno,
+		T.estado,
+		T.monto_total,
 
-        -- Paciente
-        P.id_paciente,
-        P.nombre AS nombre_paciente,
-        P.apellido AS apellido_paciente,
-        P.dni AS dni_paciente,
-        P.id_obra_social,
-        OS.nombre AS obra_social,
-        OS.porcentaje_cobertura,
+		-- Paciente
+		P.id_paciente,
+		P.nombre AS nombre_paciente,
+		P.apellido AS apellido_paciente,
+		P.dni AS dni_paciente,
+		P.id_obra_social,
+		OS.nombre AS obra_social,
+		OS.porcentaje_cobertura,
 
-        -- Horario
-        HA.id_horario,
-        HA.dia_semana,
-        HA.hora_inicio,
-        HA.hora_fin,
+		-- Horario
+		HA.id_horario,
+		HA.dia_semana,
+		HA.hora_inicio,
+		HA.hora_fin,
 
-        -- Profesional
-        PR.id_profesional,
-        PR.nombre AS nombre_profesional,
-        PR.apellido AS apellido_profesional,
+		-- Profesional
+		PR.id_profesional,
+		PR.nombre AS nombre_profesional,
+		PR.apellido AS apellido_profesional,
 
-        -- Especialidad
-        E.id_especialidad,
-        E.nombre AS especialidad,
+		-- Especialidad
+		E.id_especialidad,
+		E.nombre AS especialidad,
 
-        -- Consultorio
-        C.id_consultorio,
-        C.nombre AS consultorio,
-        C.piso,
-        C.numero_sala,
-        C.direccion AS direccion_consultorio
+		-- Consultorio
+		C.id_consultorio,
+		C.nombre AS consultorio,
+		C.piso,
+		C.numero_sala,
+		C.direccion AS direccion_consultorio
 
-    FROM Turno T
-    INNER JOIN Paciente P
-        ON T.id_paciente = P.id_paciente
-    INNER JOIN HorarioAtencion HA
-        ON T.id_horario = HA.id_horario
-    INNER JOIN Profesional PR
-        ON HA.id_profesional = PR.id_profesional
-    INNER JOIN Especialidad E
-        ON HA.id_especialidad = E.id_especialidad
-    LEFT JOIN ObraSocial OS
-        ON T.id_obra_social = OS.id_obra_social
-    INNER JOIN Consultorio C
-        ON HA.id_consultorio = C.id_consultorio;
-    GO
+		FROM Turno T
+		INNER JOIN Paciente P
+			ON T.id_paciente = P.id_paciente
+		INNER JOIN HorarioAtencion HA
+			ON T.id_horario = HA.id_horario
+		INNER JOIN Profesional_Especialidad PE
+			ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+		INNER JOIN Profesional PR
+			ON PE.id_profesional = PR.id_profesional
+		INNER JOIN Especialidad E
+			ON PE.id_especialidad = E.id_especialidad
+		LEFT JOIN ObraSocial OS
+			ON P.id_obra_social = OS.id_obra_social
+		INNER JOIN Consultorio C
+			ON HA.id_consultorio = C.id_consultorio;
+	GO
+
 
 
 
@@ -255,42 +261,45 @@
 
     GO
     CREATE OR ALTER VIEW vw_HorariosPorObraSocial
-    AS
-    SELECT 
-        HA.id_horario,
-        P.id_profesional,
-        P.nombre AS nombre_profesional,
-        P.apellido AS apellido_profesional,
+	AS
+	SELECT 
+		HA.id_horario,
+		P.id_profesional,
+		P.nombre AS nombre_profesional,
+		P.apellido AS apellido_profesional,
 
-        E.id_especialidad,
-        E.nombre AS especialidad,
+		E.id_especialidad,
+		E.nombre AS especialidad,
 
-        C.id_consultorio,
-        C.nombre AS consultorio,
-        C.direccion AS consultorio_direccion,
-        C.piso AS consultorio_piso,
-        C.numero_sala,
+		C.id_consultorio,
+		C.nombre AS consultorio,
+		C.direccion AS consultorio_direccion,
+		C.piso AS consultorio_piso,
+		C.numero_sala,
 
-        OS.id_obra_social,
-        OS.nombre AS obra_social,
-        OS.porcentaje_cobertura,
+		OS.id_obra_social,
+		OS.nombre AS obra_social,
+		OS.porcentaje_cobertura,
 
-        HA.dia_semana,
-        HA.hora_inicio,
-        HA.hora_fin
-    FROM HorarioAtencion HA
-    INNER JOIN Profesional P
-        ON HA.id_profesional = P.id_profesional
-    INNER JOIN Especialidad E
-        ON HA.id_especialidad = E.id_especialidad
-    INNER JOIN Consultorio C
-        ON HA.id_consultorio = C.id_consultorio
-    LEFT JOIN Profesional_ObraSocial PO
-        ON P.id_profesional = PO.id_profesional
-        AND PO.convenio_activo = 1
-    LEFT JOIN ObraSocial OS
-        ON PO.id_obra_social = OS.id_obra_social;
-    GO
+		HA.dia_semana,
+		HA.hora_inicio,
+		HA.hora_fin
+	FROM HorarioAtencion HA
+	INNER JOIN Profesional_Especialidad PE
+		ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+	INNER JOIN Profesional P
+		ON PE.id_profesional = P.id_profesional
+	INNER JOIN Especialidad E
+		ON PE.id_especialidad = E.id_especialidad
+	INNER JOIN Consultorio C
+		ON HA.id_consultorio = C.id_consultorio
+	LEFT JOIN Profesional_ObraSocial PO
+		ON P.id_profesional = PO.id_profesional
+	   AND PO.convenio_activo = 1
+	LEFT JOIN ObraSocial OS
+		ON PO.id_obra_social = OS.id_obra_social;
+	GO
+
 
 ---Factura Completa
 GO
@@ -298,39 +307,46 @@ GO
 GO
 CREATE OR ALTER VIEW vw_Facturas
 AS
-SELECT 
-    F.id_factura,
-    F.fecha_emision,
-    F.monto_base,
-    F.cobertura_aplicada,
-    F.descuento_aplicado,
-    F.monto_total,
+	SELECT 
+		F.id_factura,
+		F.fecha_emision,
+		F.monto_base,
+		F.cobertura_aplicada,
+		F.descuento_aplicado,
+		F.monto_total,
 
-    T.id_turno,
-    T.fecha_turno,
-    T.hora_turno,
-    T.estado,
+		T.id_turno,
+		T.fecha_turno,
+		T.hora_turno,
+		T.estado,
 
-    P.id_paciente,
-    P.nombre AS nombre_paciente,
-    P.apellido AS apellido_paciente,
-    P.dni,
+		P.id_paciente,
+		P.nombre AS nombre_paciente,
+		P.apellido AS apellido_paciente,
+		P.dni,
 
-    PR.id_profesional,
-    PR.nombre AS nombre_profesional,
-    PR.apellido AS apellido_profesional,
+		PR.id_profesional,
+		PR.nombre AS nombre_profesional,
+		PR.apellido AS apellido_profesional,
 
-    E.nombre AS especialidad,
-    OS.nombre AS obra_social
+		E.nombre AS especialidad,
+		OS.nombre AS obra_social
 
-FROM Factura F
-INNER JOIN Turno T ON F.id_turno = T.id_turno
-INNER JOIN Paciente P ON T.id_paciente = P.id_paciente
-INNER JOIN HorarioAtencion HA ON T.id_horario = HA.id_horario
-INNER JOIN Profesional PR ON HA.id_profesional = PR.id_profesional
-INNER JOIN Especialidad E ON HA.id_especialidad = E.id_especialidad
-LEFT JOIN ObraSocial OS ON T.id_obra_social = OS.id_obra_social;
-GO
+	FROM Factura F
+	INNER JOIN Turno T          ON F.id_turno = T.id_turno
+	INNER JOIN Paciente P       ON T.id_paciente = P.id_paciente
+	INNER JOIN HorarioAtencion HA 
+		ON T.id_horario = HA.id_horario
+	INNER JOIN Profesional_Especialidad PE
+		ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+	INNER JOIN Profesional PR 
+		ON PE.id_profesional = PR.id_profesional
+	INNER JOIN Especialidad E 
+		ON PE.id_especialidad = E.id_especialidad
+	LEFT JOIN ObraSocial OS 
+		ON P.id_obra_social = OS.id_obra_social;
+	GO
+
 
 
     -- Resumenes Contables 
@@ -369,12 +385,12 @@ GO
     CREATE OR ALTER PROCEDURE sp_InsertHorarioAtencionPartido
     (
         @id_profesional   INT,
-        @id_consultorio   INT,
-        @id_especialidad  INT,
-        @dia_semana       NVARCHAR(20),
-        @hora_inicio      TIME(0),
-        @hora_fin         TIME(0),
-        @cantidad_partes  INT
+		@id_consultorio   INT,
+		@id_especialidad  INT,
+		@dia_semana       NVARCHAR(20),
+		@hora_inicio      TIME(0),
+		@hora_fin         TIME(0),
+		@cantidad_partes  INT
     )
     AS
     BEGIN
@@ -419,6 +435,8 @@ GO
 
             DECLARE @duracion_parte INT = @duracion_min / @cantidad_partes;
 
+			
+
             -- Cada parte minimo 30 minutos y multiplo de 30
             IF @duracion_parte < 30 OR @duracion_parte % 30 <> 0
                 THROW 50007, 'Cada parte debe ser de al menos 30 minutos y multiplo de 30.', 1;
@@ -434,6 +452,12 @@ GO
 
             IF NOT EXISTS (SELECT 1 FROM Especialidad WHERE id_especialidad = @id_especialidad)
                 THROW 50010, 'La especialidad no existe.', 1;
+
+			DECLARE @id_profesional_especialidad INT = NULL ;
+
+			SELECT @id_profesional_especialidad = id_profesional_especialidad
+			FROM Profesional_Especialidad
+			WHERE id_profesional = @id_profesional AND id_especialidad = @id_especialidad
 
             ---------------------------------------------------------
             -- 3) Transaccion para insertar las partes
@@ -456,7 +480,7 @@ GO
                 IF EXISTS (
                     SELECT 1
                     FROM HorarioAtencion ha
-                    WHERE ha.id_profesional = @id_profesional
+                    WHERE ha.id_profesional_especialidad = @id_profesional_especialidad
                     AND ha.dia_semana = @dia_semana
                     -- solapamiento de rangos de tiempo:
                     AND NOT (ha.hora_fin <= @ini_parte OR ha.hora_inicio >= @fin_parte)
@@ -488,10 +512,10 @@ GO
                 -- 3.c) Insertar la parte
                 -------------------------------------------------
                 INSERT INTO HorarioAtencion
-                    (id_profesional, id_consultorio, id_especialidad,
+                    (id_profesional_especialidad, id_consultorio,
                     dia_semana, hora_inicio, hora_fin)
                 VALUES
-                    (@id_profesional, @id_consultorio, @id_especialidad,
+                    (@id_profesional_especialidad, @id_consultorio, 
                     @dia_semana, @ini_parte, @fin_parte);
 
                 SET @i += 1;
@@ -579,16 +603,20 @@ GO
 
         -- 3) Profesional + Especialidad
         SELECT 
-            @id_profesional = id_profesional,
-            @id_especialidad = id_especialidad
-        FROM HorarioAtencion
-        WHERE id_horario = @id_horario;
+		@id_profesional = PE.id_profesional,
+		@id_especialidad = PE.id_especialidad
+		FROM HorarioAtencion HA
+		INNER JOIN Profesional_Especialidad PE
+			ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+		WHERE HA.id_horario = @id_horario;
+
 
         -- 4) Monto base
-        SELECT @monto_base = valor_consulta
-        FROM Profesional_Especialidad
-        WHERE id_profesional = @id_profesional
-        AND id_especialidad = @id_especialidad;
+        SELECT @monto_base = PE.valor_consulta
+		FROM HorarioAtencion HA
+		INNER JOIN Profesional_Especialidad PE ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+		WHERE HA.id_horario = @id_horario;
+
 
         IF @monto_base IS NULL
             RETURN NULL;
@@ -737,84 +765,77 @@ GO
 
     GO
 
-    CREATE OR ALTER TRIGGER t_FinalizarTurno
-    ON Turno
-    AFTER UPDATE
-    AS
-    BEGIN
-        SET NOCOUNT ON;
+	CREATE OR ALTER TRIGGER t_FinalizarTurno
+ON Turno
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-        --------------------------------------------------------------
-        -- 1) Detectar únicamente cambios de estado → Finalizado
-        --------------------------------------------------------------
-        IF NOT EXISTS (
-            SELECT 1
-            FROM inserted I
-            INNER JOIN deleted D ON I.id_turno = D.id_turno
-            WHERE D.estado <> 'Finalizado'
-            AND I.estado = 'Finalizado'
-        )
-            RETURN;
-
-        --------------------------------------------------------------
-        -- 2) Insertar factura SOLO si no existe una factura previa
-        --------------------------------------------------------------
-        INSERT INTO Factura (
-            id_turno,
-            monto_base,
-            cobertura_aplicada,
-            descuento_aplicado,
-            monto_total,
-            fecha_emision
-        )
-        SELECT  
-            I.id_turno,
-
-            -- MONTO BASE
-            PE.valor_consulta AS monto_base,
-
-            -- COBERTURA (si había convenio → cobertura, sino 0)
-            CASE 
-                WHEN PO.convenio_activo = 1 THEN OS.porcentaje_cobertura
-                ELSE 0
-            END AS cobertura_aplicada,
-
-            -- DESCUENTO (si había convenio y coincidía edad → descuento, sino 0)
-            ISNULL(
-                (
-                    SELECT TOP 1 d.porcentaje_descuento
-                    FROM Descuento d
-                    WHERE d.id_obra_social = I.id_obra_social
-                    AND dbo.fn_CalcularEdad(P.fecha_nacimiento)
-                            BETWEEN d.edad_min AND d.edad_max
-                    ORDER BY d.porcentaje_descuento DESC
-                ),
-            0) AS descuento_aplicado,
-
-            -- MONTO TOTAL YA CALCULADO EN EL TURNO
-            I.monto_total,
-
-            CAST(GETDATE() AS DATE) AS fecha_emision
-
+    IF NOT EXISTS (
+        SELECT 1
         FROM inserted I
         INNER JOIN deleted D ON I.id_turno = D.id_turno
-        INNER JOIN Paciente P ON I.id_paciente = P.id_paciente
-        INNER JOIN HorarioAtencion HA ON I.id_horario = HA.id_horario
-        INNER JOIN Profesional_Especialidad PE 
-            ON HA.id_profesional = PE.id_profesional
-        AND HA.id_especialidad = PE.id_especialidad
-        LEFT JOIN ObraSocial OS ON I.id_obra_social = OS.id_obra_social
-        LEFT JOIN Profesional_ObraSocial PO 
-            ON PO.id_profesional = HA.id_profesional
-        AND PO.id_obra_social = I.id_obra_social
-        AND PO.convenio_activo = 1
+        WHERE D.estado <> 'Finalizado'
+          AND I.estado = 'Finalizado'
+    )
+        RETURN;
 
-        WHERE I.estado = 'Finalizado'
-        AND D.estado <> 'Finalizado'
-        AND NOT EXISTS (SELECT 1 FROM Factura F WHERE F.id_turno = I.id_turno);
+    INSERT INTO Factura (
+        id_turno,
+        monto_base,
+        cobertura_aplicada,
+        descuento_aplicado,
+        monto_total,
+        fecha_emision
+    )
+    SELECT  
+        I.id_turno,
 
-    END;
-    GO
+        -- MONTO BASE
+        PE.valor_consulta AS monto_base,
+
+        -- COBERTURA
+        CASE 
+            WHEN PO.convenio_activo = 1 THEN OS.porcentaje_cobertura
+            ELSE 0
+        END AS cobertura_aplicada,
+
+        -- DESCUENTO
+        ISNULL(
+            (
+                SELECT TOP 1 d.porcentaje_descuento
+                FROM Descuento d
+                WHERE d.id_obra_social = I.id_obra_social
+                  AND dbo.fn_CalcularEdad(P.fecha_nacimiento)
+                        BETWEEN d.edad_min AND d.edad_max
+                ORDER BY d.porcentaje_descuento DESC
+            ),
+        0) AS descuento_aplicado,
+
+        I.monto_total,
+        CAST(GETDATE() AS DATE) AS fecha_emision
+
+    FROM inserted I
+    INNER JOIN deleted D       ON I.id_turno = D.id_turno
+    INNER JOIN Paciente P      ON I.id_paciente = P.id_paciente
+    INNER JOIN HorarioAtencion HA 
+        ON I.id_horario = HA.id_horario
+    INNER JOIN Profesional_Especialidad PE 
+        ON HA.id_profesional_especialidad = PE.id_profesional_especialidad
+    LEFT JOIN ObraSocial OS    
+        ON I.id_obra_social = OS.id_obra_social
+    LEFT JOIN Profesional_ObraSocial PO 
+        ON PO.id_profesional = PE.id_profesional
+       AND PO.id_obra_social = I.id_obra_social
+       AND PO.convenio_activo = 1
+
+    WHERE I.estado = 'Finalizado'
+      AND D.estado <> 'Finalizado'
+      AND NOT EXISTS (SELECT 1 FROM Factura F WHERE F.id_turno = I.id_turno);
+END;
+GO
+
 
 
     --- STORE PROCEDURES PARA BUSQUEDAS CON PARAMETROS DINAMICOS
